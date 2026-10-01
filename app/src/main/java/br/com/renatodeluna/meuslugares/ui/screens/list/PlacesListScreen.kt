@@ -32,6 +32,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import br.com.renatodeluna.meuslugares.R
 import br.com.renatodeluna.meuslugares.domain.model.Place
 import br.com.renatodeluna.meuslugares.domain.model.PlaceCategory
+import br.com.renatodeluna.meuslugares.ui.components.LoadingIndicator
 import br.com.renatodeluna.meuslugares.ui.components.PlaceCard
 import br.com.renatodeluna.meuslugares.ui.theme.MeusLugaresTheme
 
@@ -77,8 +78,7 @@ fun PlacesListContent(
             .fillMaxSize()
             .padding(innerPadding)
         when {
-            // A leitura do DataStore leva milissegundos; um spinner só piscaria na tela.
-            uiState.isLoading -> Box(contentModifier)
+            uiState.isLoading -> LoadingIndicator(contentModifier)
             uiState.places.isEmpty() -> EmptyPlaces(contentModifier)
             else -> LazyColumn(
                 modifier = contentModifier,

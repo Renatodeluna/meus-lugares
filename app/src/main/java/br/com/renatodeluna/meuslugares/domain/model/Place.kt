@@ -14,6 +14,10 @@ data class Place(
     val longitude: Double? = null,
     val createdAt: Long,
 ) {
+    // Propriedade sem campo de apoio: não entra no JSON salvo.
+    val coordinates: Coordinates?
+        get() = if (latitude != null && longitude != null) Coordinates(latitude, longitude) else null
+
     // A faixa é validada no PlaceFormViewModel; aqui não há require para que um
     // registro antigo fora da faixa não impeça a leitura da lista inteira.
     companion object {

@@ -1,6 +1,7 @@
 package br.com.renatodeluna.meuslugares.ui.screens.detail
 
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
+import br.com.renatodeluna.meuslugares.data.local.PhotoStorage
 import br.com.renatodeluna.meuslugares.data.local.PlacesDataStore
 import br.com.renatodeluna.meuslugares.data.repository.PlacesRepository
 import br.com.renatodeluna.meuslugares.domain.model.Place
@@ -25,6 +26,7 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
+import java.io.File
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class PlaceDetailViewModelTest {
@@ -35,6 +37,8 @@ class PlaceDetailViewModelTest {
     private val dispatcher = UnconfinedTestDispatcher()
     private val testScope = TestScope(dispatcher + Job())
     private lateinit var repository: PlacesRepository
+    private lateinit var photosDir: File
+    private lateinit var photoStorage: PhotoStorage
 
     private val place = Place(
         id = "1",
@@ -52,7 +56,13 @@ class PlaceDetailViewModelTest {
             tmpFolder.root.resolve("test.preferences_pb")
         }
         repository = PlacesRepository(PlacesDataStore(preferences))
+        photosDir = File(tmpFolder.root, "photos")
+        photoStorage = PhotoStorage(File(tmpFolder.root, "captures"), photosDir) {
+            "content://test/${it.parentFile!!.name}/${it.name}"
+        }
     }
+
+    private fun viewModel(placeId: String) = PlaceDetailViewModel(placeId, repository, photoStorage)
 
     @After
     fun tearDown() {
@@ -64,7 +74,7 @@ class PlaceDetailViewModelTest {
     fun `carrega o lugar pelo id`() = testScope.runTest {
         repository.upsert(place)
 
-        val state = PlaceDetailViewModel("1", repository).uiState.first { !it.isLoading }
+        val state = viewModel("1").uiState.first { !it.isLoading }
 
         assertEquals(place, state.place)
         assertFalse(state.notFound)
@@ -72,7 +82,7 @@ class PlaceDetailViewModelTest {
 
     @Test
     fun `id inexistente sinaliza nao encontrado`() = testScope.runTest {
-        val state = PlaceDetailViewModel("nao-existe", repository).uiState.first { !it.isLoading }
+        val state = viewModel("nao-existe").uiState.first { !it.isLoading }
 
         assertNull(state.place)
         assertTrue(state.notFound)
@@ -81,7 +91,7 @@ class PlaceDetailViewModelTest {
     @Test
     fun `reflete edicao feita enquanto a tela esta aberta`() = testScope.runTest {
         repository.upsert(place)
-        val viewModel = PlaceDetailViewModel("1", repository)
+        val viewModel = viewModel("1")
         backgroundScope.launch { viewModel.uiState.collect {} }
 
         repository.upsert(place.copy(name = "Mirante Novo"))
@@ -92,7 +102,7 @@ class PlaceDetailViewModelTest {
     @Test
     fun `excluir remove do repositorio, emite evento e nao mostra nao encontrado`() = testScope.runTest {
         repository.upsert(place)
-        val viewModel = PlaceDetailViewModel("1", repository)
+        val viewModel = viewModel("1")
         backgroundScope.launch { viewModel.uiState.collect {} }
         viewModel.uiState.first { !it.isLoading }
 
@@ -102,5 +112,19 @@ class PlaceDetailViewModelTest {
         assertNull(repository.getById("1"))
         assertEquals(place, viewModel.uiState.value.place)
         assertFalse(viewModel.uiState.value.notFound)
+    }
+
+    @Test
+    fun `excluir apaga tambem o arquivo da foto`() = testScope.runTest {
+        val photo = File(photosDir.apply { mkdirs() }, "IMG_1.jpg").apply { writeText("jpeg") }
+        repository.upsert(place.copy(photoUri = "content://test/photos/IMG_1.jpg"))
+        val viewModel = viewModel("1")
+        backgroundScope.launch { viewModel.uiState.collect {} }
+        viewModel.uiState.first { !it.isLoading }
+
+        viewModel.delete()
+        viewModel.deletedEvents.first()
+
+        assertFalse(photo.exists())
     }
 }

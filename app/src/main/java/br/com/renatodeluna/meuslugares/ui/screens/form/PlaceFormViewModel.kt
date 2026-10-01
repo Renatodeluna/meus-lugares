@@ -9,6 +9,8 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import androidx.navigation.toRoute
 import br.com.renatodeluna.meuslugares.MeusLugaresApplication
 import br.com.renatodeluna.meuslugares.R
+import br.com.renatodeluna.meuslugares.data.local.PhotoStorage
+import br.com.renatodeluna.meuslugares.data.location.LocationSource
 import br.com.renatodeluna.meuslugares.data.repository.PlacesRepository
 import br.com.renatodeluna.meuslugares.domain.model.Place
 import br.com.renatodeluna.meuslugares.domain.model.PlaceCategory
@@ -26,6 +28,8 @@ import java.util.UUID
 class PlaceFormViewModel(
     private val placeId: String?,
     private val repository: PlacesRepository,
+    private val photoStorage: PhotoStorage,
+    private val locationSource: LocationSource,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(
@@ -33,11 +37,11 @@ class PlaceFormViewModel(
     )
     val uiState: StateFlow<PlaceFormUiState> = _uiState.asStateFlow()
 
-    private val _savedEvents = Channel<Unit>(Channel.BUFFERED)
-    val savedEvents: Flow<Unit> = _savedEvents.receiveAsFlow()
+    private val _events = Channel<PlaceFormEvent>(Channel.BUFFERED)
+    val events: Flow<PlaceFormEvent> = _events.receiveAsFlow()
 
-    // Na edição, o lugar original fornece o que o formulário não mostra
-    // (id, createdAt, foto, coordenadas) e precisa ser preservado ao salvar.
+    // Na edição, o lugar original fornece o que o formulário não edita (id,
+    // createdAt) e a foto anterior, que é apagada se for trocada.
     private var original: Place? = null
 
     init {
@@ -54,6 +58,8 @@ class PlaceFormViewModel(
                             category = place.category,
                             rating = place.rating.coerceIn(Place.MIN_RATING, Place.MAX_RATING),
                             notes = place.notes,
+                            photoUri = place.photoUri,
+                            coordinates = place.coordinates,
                             isLoading = false,
                         )
                     }
@@ -80,30 +86,60 @@ class PlaceFormViewModel(
         _uiState.update { it.copy(notes = notes) }
     }
 
+    /** URI onde a câmera deve gravar a foto; só vira foto do lugar em [onPhotoCaptured]. */
+    fun newCaptureUri(): String = photoStorage.newCaptureUri()
+
+    fun onPhotoCaptured(uri: String) {
+        _uiState.update { it.copy(photoUri = uri) }
+    }
+
+    fun removePhoto() {
+        _uiState.update { it.copy(photoUri = null) }
+    }
+
+    fun fetchLocation() {
+        if (_uiState.value.isFetchingLocation) return
+        _uiState.update { it.copy(isFetchingLocation = true) }
+        viewModelScope.launch {
+            val coordinates = locationSource.currentLocation()
+            _uiState.update {
+                it.copy(coordinates = coordinates ?: it.coordinates, isFetchingLocation = false)
+            }
+            if (coordinates == null) {
+                _events.send(PlaceFormEvent.ShowMessage(R.string.error_location_unavailable))
+            }
+        }
+    }
+
+    fun removeLocation() {
+        _uiState.update { it.copy(coordinates = null) }
+    }
+
     fun save() {
         val state = _uiState.value
         if (!state.canSave) return
         _uiState.update { it.copy(isSaving = true) }
 
-        val name = state.name.trim()
-        val notes = state.notes.trim()
-        val place = original?.copy(
-            name = name,
-            category = state.category,
-            rating = state.rating,
-            notes = notes,
-        ) ?: Place(
-            id = UUID.randomUUID().toString(),
-            name = name,
-            category = state.category,
-            rating = state.rating,
-            notes = notes,
-            createdAt = System.currentTimeMillis(),
-        )
-
         viewModelScope.launch {
+            val photoUri = photoStorage.persist(state.photoUri)
+            val place = Place(
+                id = original?.id ?: UUID.randomUUID().toString(),
+                name = state.name.trim(),
+                category = state.category,
+                rating = state.rating,
+                notes = state.notes.trim(),
+                photoUri = photoUri,
+                latitude = state.coordinates?.latitude,
+                longitude = state.coordinates?.longitude,
+                createdAt = original?.createdAt ?: System.currentTimeMillis(),
+            )
             repository.upsert(place)
-            _savedEvents.send(Unit)
+
+            val previousPhoto = original?.photoUri
+            if (previousPhoto != null && previousPhoto != photoUri) {
+                photoStorage.delete(previousPhoto)
+            }
+            _events.send(PlaceFormEvent.Saved)
         }
     }
 
@@ -112,7 +148,12 @@ class PlaceFormViewModel(
             initializer {
                 val app = this[APPLICATION_KEY] as MeusLugaresApplication
                 val route = createSavedStateHandle().toRoute<Screen.PlaceForm>()
-                PlaceFormViewModel(route.placeId, app.container.placesRepository)
+                PlaceFormViewModel(
+                    placeId = route.placeId,
+                    repository = app.container.placesRepository,
+                    photoStorage = app.container.photoStorage,
+                    locationSource = app.container.locationSource,
+                )
             }
         }
     }

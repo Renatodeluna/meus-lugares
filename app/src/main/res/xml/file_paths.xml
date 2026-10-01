@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Os nomes precisam ser iguais aos das pastas: PhotoStorage usa o nome do
+     caminho na URI para achar o arquivo de volta. -->
+<paths>
+    <!-- Fotos recém-tiradas, ainda não salvas num lugar. -->
+    <cache-path
+        name="captures"
+        path="captures/" />
+    <!-- Fotos de lugares salvos. -->
+    <files-path
+        name="photos"
+        path="photos/" />
+</paths>

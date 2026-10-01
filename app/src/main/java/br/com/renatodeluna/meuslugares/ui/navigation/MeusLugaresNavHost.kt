@@ -42,6 +42,7 @@ fun MeusLugaresNavHost(navController: NavHostController = rememberNavController(
         }
         composable<Screen.PlaceForm> {
             PlaceFormScreen(
+                snackbarHostState = snackbarHostState,
                 onSaved = {
                     navController.popBackStack()
                     showMessage(savedMessage)

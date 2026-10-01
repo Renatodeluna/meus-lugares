@@ -8,6 +8,7 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import androidx.navigation.toRoute
 import br.com.renatodeluna.meuslugares.MeusLugaresApplication
+import br.com.renatodeluna.meuslugares.data.local.PhotoStorage
 import br.com.renatodeluna.meuslugares.data.repository.PlacesRepository
 import br.com.renatodeluna.meuslugares.ui.navigation.Screen
 import kotlinx.coroutines.channels.Channel
@@ -23,6 +24,7 @@ import kotlinx.coroutines.launch
 class PlaceDetailViewModel(
     private val placeId: String,
     private val repository: PlacesRepository,
+    private val photoStorage: PhotoStorage,
 ) : ViewModel() {
 
     private var isDeleting = false
@@ -52,8 +54,10 @@ class PlaceDetailViewModel(
     fun delete() {
         if (isDeleting) return
         isDeleting = true
+        val photoUri = uiState.value.place?.photoUri
         viewModelScope.launch {
             repository.delete(placeId)
+            photoStorage.delete(photoUri)
             _deletedEvents.send(Unit)
         }
     }
@@ -63,7 +67,7 @@ class PlaceDetailViewModel(
             initializer {
                 val app = this[APPLICATION_KEY] as MeusLugaresApplication
                 val route = createSavedStateHandle().toRoute<Screen.PlaceDetail>()
-                PlaceDetailViewModel(route.placeId, app.container.placesRepository)
+                PlaceDetailViewModel(route.placeId, app.container.placesRepository, app.container.photoStorage)
             }
         }
     }

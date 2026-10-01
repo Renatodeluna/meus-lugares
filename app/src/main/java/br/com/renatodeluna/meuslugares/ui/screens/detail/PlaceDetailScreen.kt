@@ -39,7 +39,10 @@ import br.com.renatodeluna.meuslugares.R
 import br.com.renatodeluna.meuslugares.domain.model.Place
 import br.com.renatodeluna.meuslugares.domain.model.PlaceCategory
 import br.com.renatodeluna.meuslugares.ui.components.BackNavigationIcon
+import br.com.renatodeluna.meuslugares.ui.components.LoadingIndicator
+import br.com.renatodeluna.meuslugares.ui.components.PlacePhoto
 import br.com.renatodeluna.meuslugares.ui.components.RatingStars
+import br.com.renatodeluna.meuslugares.ui.components.formatCoordinates
 import br.com.renatodeluna.meuslugares.ui.theme.MeusLugaresTheme
 import java.time.Instant
 import java.time.ZoneId
@@ -90,7 +93,7 @@ fun PlaceDetailContent(
     ) { innerPadding ->
         val place = uiState.place
         when {
-            uiState.isLoading -> Box(Modifier.fillMaxSize().padding(innerPadding))
+            uiState.isLoading -> LoadingIndicator(Modifier.padding(innerPadding))
             place == null -> Box(
                 modifier = Modifier.fillMaxSize().padding(innerPadding).padding(32.dp),
                 contentAlignment = Alignment.Center,
@@ -121,9 +124,17 @@ private fun PlaceDetails(
         modifier = modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        verticalArrangement = Arrangement.spacedBy(20.dp),
     ) {
+        if (place.photoUri != null) {
+            PlacePhoto(
+                uri = place.photoUri,
+                contentDescription = stringResource(R.string.photo_description, place.name),
+                height = 220.dp,
+            )
+        }
+
         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Text(text = place.name, style = MaterialTheme.typography.headlineSmall)
             Text(
@@ -135,16 +146,17 @@ private fun PlaceDetails(
 
         RatingStars(rating = place.rating, starSize = 28.dp)
 
-        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            Text(
-                text = stringResource(R.string.label_notes),
-                style = MaterialTheme.typography.labelLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
+        DetailSection(title = stringResource(R.string.label_notes)) {
             Text(
                 text = place.notes.ifBlank { stringResource(R.string.detail_no_notes) },
                 style = MaterialTheme.typography.bodyLarge,
             )
+        }
+
+        place.coordinates?.let { coordinates ->
+            DetailSection(title = stringResource(R.string.label_location)) {
+                Text(text = formatCoordinates(coordinates), style = MaterialTheme.typography.bodyLarge)
+            }
         }
 
         Text(
@@ -188,6 +200,18 @@ private fun PlaceDetails(
                 }
             },
         )
+    }
+}
+
+@Composable
+private fun DetailSection(title: String, content: @Composable () -> Unit) {
+    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        Text(
+            text = title,
+            style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        content()
     }
 }
 

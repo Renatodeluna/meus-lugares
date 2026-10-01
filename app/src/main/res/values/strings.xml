@@ -38,4 +38,33 @@
 
     <string name="place_saved">Lugar salvo com sucesso</string>
     <string name="place_deleted">Lugar excluído</string>
+
+    <string name="loading">Carregando</string>
+
+    <string name="label_photo">Foto</string>
+    <string name="photo_description">Foto de %1$s</string>
+    <string name="photo_description_form">Foto do lugar</string>
+    <string name="action_take_photo">Tirar foto</string>
+    <string name="action_retake_photo">Trocar foto</string>
+    <string name="action_remove_photo">Remover foto</string>
+
+    <string name="label_location">Localização</string>
+    <string name="location_empty">Sem localização</string>
+    <string name="location_value">Lat %1$s, Lng %2$s</string>
+    <string name="action_use_location">Usar minha localização atual</string>
+    <string name="action_remove_location">Remover localização</string>
+
+    <string name="action_continue">Continuar</string>
+    <string name="action_not_now">Agora não</string>
+    <string name="action_settings">Configurações</string>
+
+    <string name="permission_camera_title">Acesso à câmera</string>
+    <string name="permission_camera_rationale">A câmera é usada só para você tirar uma foto deste lugar. A foto fica salva apenas no seu aparelho.</string>
+    <string name="permission_camera_denied">Sem permissão de câmera, não é possível tirar a foto.</string>
+    <string name="permission_location_title">Acesso à localização</string>
+    <string name="permission_location_rationale">A localização é usada só para preencher a latitude e a longitude deste lugar, quando você tocar no botão.</string>
+    <string name="permission_location_denied">Sem permissão de localização: latitude e longitude ficarão em branco.</string>
+
+    <string name="error_camera_unavailable">Não foi possível abrir a câmera neste aparelho.</string>
+    <string name="error_location_unavailable">Não foi possível obter a localização. Verifique se a localização do aparelho está ligada e tente de novo.</string>
 </resources>
