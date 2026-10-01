@@ -173,7 +173,7 @@ e o SDK configurado (`ANDROID_HOME` ou `local.properties` com `sdk.dir`):
 
 ```powershell
 # Windows (PowerShell)
-$env:JAVA_HOME = "C:\Program Files\Android\Android Studio\jbr"
+$env:JAVA_HOME = "<caminho do JDK 21; no Android Studio fica na pasta jbr>"
 .\gradlew.bat assembleDebug
 .\gradlew.bat installDebug
 .\gradlew.bat testDebugUnitTest
