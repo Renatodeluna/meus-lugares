@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">Meus Lugares</string>
+
+    <string name="category_restaurant">Restaurante</string>
+    <string name="category_cafe">Cafeteria</string>
+    <string name="category_tourist_spot">Ponto turístico</string>
+    <string name="category_store">Loja</string>
 </resources>
