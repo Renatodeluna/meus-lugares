@@ -4,8 +4,24 @@ Aplicativo Android para montar um catálogo pessoal de lugares favoritos —
 restaurantes, cafeterias, pontos turísticos e lojas — com nota, observações,
 foto e localização.
 
-> **Projeto acadêmico** desenvolvido para a disciplina de Desenvolvimento
-> Mobile, com foco em Kotlin, Jetpack Compose e arquitetura MVVM.
+> **Projeto acadêmico** desenvolvido para a disciplina de Desenvolvimento para
+> Dispositivos Móveis I, com foco em Kotlin, Jetpack Compose e arquitetura MVVM.
+
+| | |
+|---|---|
+| **Autor** | Renato de Luna Guedes |
+| **Instituição** | IFSP — Instituto Federal de São Paulo |
+| **Curso** | Pós-Graduação em Desenvolvimento de Sistemas Web e Aplicativos Móveis |
+| **Disciplina** | Desenvolvimento para Dispositivos Móveis I |
+| **Professor** | Edivaldo Serafim |
+
+<p align="center">
+  <img src="docs/screenshots/01-lista.png" width="220" alt="Lista de lugares">
+  &nbsp;
+  <img src="docs/screenshots/02-detalhes.png" width="220" alt="Detalhes de um lugar com foto e localização">
+  &nbsp;
+  <img src="docs/screenshots/06-lista-escuro.png" width="220" alt="Lista de lugares no tema escuro">
+</p>
 
 ## Finalidade
 
@@ -60,6 +76,24 @@ explica o motivo e continua funcionando normalmente, com esses campos em branco.
    já preenchida.
 5. **Exclusão** — pelo botão **Excluir** nos detalhes, com confirmação. Volta
    para a lista com a mensagem "Lugar excluído".
+
+## Telas
+
+<table>
+  <tr>
+    <td align="center" width="33%"><img src="docs/screenshots/05-lista-vazia.png" width="230" alt="Lista vazia"><br><sub><b>Primeira execução</b> — lista vazia com convite para cadastrar</sub></td>
+    <td align="center" width="33%"><img src="docs/screenshots/01-lista.png" width="230" alt="Lista de lugares"><br><sub><b>Lista</b> — cards com categoria, nota e observação</sub></td>
+    <td align="center" width="33%"><img src="docs/screenshots/02-detalhes.png" width="230" alt="Detalhes do lugar"><br><sub><b>Detalhes</b> — foto, nota, localização e data de cadastro</sub></td>
+  </tr>
+  <tr>
+    <td align="center"><img src="docs/screenshots/03-edicao.png" width="230" alt="Edição do lugar"><br><sub><b>Cadastro/Edição</b> — nota em estrelas, foto pela câmera e localização pelo GPS</sub></td>
+    <td align="center"><img src="docs/screenshots/04-excluir.png" width="230" alt="Confirmação de exclusão"><br><sub><b>Exclusão</b> — confirmação antes de apagar</sub></td>
+    <td align="center"><img src="docs/screenshots/07-detalhes-escuro.png" width="230" alt="Detalhes no tema escuro"><br><sub><b>Tema escuro</b> — mesma paleta, com contraste revisado</sub></td>
+  </tr>
+</table>
+
+> Prints tirados no emulador do Android Studio. A foto é a cena simulada da
+> câmera virtual do emulador.
 
 ## Tecnologias
 
