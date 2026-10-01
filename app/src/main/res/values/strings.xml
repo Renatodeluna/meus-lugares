@@ -5,4 +5,17 @@
     <string name="category_cafe">Cafeteria</string>
     <string name="category_tourist_spot">Ponto turístico</string>
     <string name="category_store">Loja</string>
+
+    <string name="action_add_place">Adicionar lugar</string>
+    <string name="action_back">Voltar</string>
+
+    <string name="rating_description">Nota %1$d de %2$d</string>
+
+    <string name="places_empty_title">Nenhum lugar por aqui ainda</string>
+    <string name="places_empty_message">Toque em + para cadastrar seu primeiro lugar favorito.</string>
+
+    <string name="title_new_place">Novo lugar</string>
+    <string name="title_edit_place">Editar lugar</string>
+    <string name="title_place_detail">Detalhes do lugar</string>
+    <string name="screen_under_construction">Esta tela será implementada numa próxima etapa.</string>
 </resources>
