@@ -1,34 +1,37 @@
 package br.com.renatodeluna.meuslugares.ui.navigation
 
-import androidx.annotation.StringRes
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.toRoute
 import br.com.renatodeluna.meuslugares.R
+import br.com.renatodeluna.meuslugares.ui.screens.detail.PlaceDetailScreen
+import br.com.renatodeluna.meuslugares.ui.screens.form.PlaceFormScreen
 import br.com.renatodeluna.meuslugares.ui.screens.list.PlacesListScreen
+import kotlinx.coroutines.launch
 
 @Composable
 fun MeusLugaresNavHost(navController: NavHostController = rememberNavController()) {
+    // Compartilhado entre as telas: o feedback de "salvo"/"excluído" precisa
+    // aparecer na tela de destino, já que a tela que disparou a ação é fechada.
+    // O escopo é o do NavHost para o Snackbar sobreviver à saída dessa tela.
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
+    val savedMessage = stringResource(R.string.place_saved)
+    val deletedMessage = stringResource(R.string.place_deleted)
+    val showMessage: (String) -> Unit = { message ->
+        scope.launch { snackbarHostState.showSnackbar(message) }
+    }
+
     NavHost(navController = navController, startDestination = Screen.PlaceList) {
         composable<Screen.PlaceList> {
             PlacesListScreen(
+                snackbarHostState = snackbarHostState,
                 onAddPlace = {
                     navController.navigate(Screen.PlaceForm()) { launchSingleTop = true }
                 },
@@ -37,50 +40,27 @@ fun MeusLugaresNavHost(navController: NavHostController = rememberNavController(
                 },
             )
         }
-        composable<Screen.PlaceForm> { backStackEntry ->
-            val route = backStackEntry.toRoute<Screen.PlaceForm>()
-            PendingScreen(
-                titleRes = if (route.placeId == null) R.string.title_new_place else R.string.title_edit_place,
-                onBack = { navController.popBackStack() },
+        composable<Screen.PlaceForm> {
+            PlaceFormScreen(
+                onSaved = {
+                    navController.popBackStack()
+                    showMessage(savedMessage)
+                },
+                onCancel = { navController.popBackStack() },
             )
         }
         composable<Screen.PlaceDetail> {
-            PendingScreen(
-                titleRes = R.string.title_place_detail,
+            PlaceDetailScreen(
+                snackbarHostState = snackbarHostState,
+                onEdit = { placeId ->
+                    navController.navigate(Screen.PlaceForm(placeId)) { launchSingleTop = true }
+                },
+                onDeleted = {
+                    navController.popBackStack<Screen.PlaceList>(inclusive = false)
+                    showMessage(deletedMessage)
+                },
                 onBack = { navController.popBackStack() },
             )
-        }
-    }
-}
-
-// Placeholder para as rotas de formulário e detalhes, que ganham telas reais
-// nos próximos prompts. Existe só para que a navegação já funcione de ponta a ponta.
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun PendingScreen(@StringRes titleRes: Int, onBack: () -> Unit) {
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text(stringResource(titleRes)) },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(
-                            painter = painterResource(R.drawable.ic_arrow_back),
-                            contentDescription = stringResource(R.string.action_back),
-                        )
-                    }
-                },
-            )
-        },
-    ) { innerPadding ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-                .padding(24.dp),
-            contentAlignment = Alignment.Center,
-        ) {
-            Text(stringResource(R.string.screen_under_construction))
         }
     }
 }

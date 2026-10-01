@@ -13,10 +13,13 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -34,6 +37,7 @@ import br.com.renatodeluna.meuslugares.ui.theme.MeusLugaresTheme
 
 @Composable
 fun PlacesListScreen(
+    snackbarHostState: SnackbarHostState,
     onAddPlace: () -> Unit,
     onPlaceClick: (placeId: String) -> Unit,
     viewModel: PlacesListViewModel = viewModel(factory = PlacesListViewModel.Factory),
@@ -41,6 +45,7 @@ fun PlacesListScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     PlacesListContent(
         uiState = uiState,
+        snackbarHostState = snackbarHostState,
         onAddPlace = onAddPlace,
         onPlaceClick = onPlaceClick,
     )
@@ -52,11 +57,13 @@ fun PlacesListContent(
     uiState: PlacesListUiState,
     onAddPlace: () -> Unit,
     onPlaceClick: (placeId: String) -> Unit,
+    snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
 ) {
     Scaffold(
         topBar = {
             TopAppBar(title = { Text(stringResource(R.string.app_name)) })
         },
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         floatingActionButton = {
             FloatingActionButton(onClick = onAddPlace) {
                 Icon(
